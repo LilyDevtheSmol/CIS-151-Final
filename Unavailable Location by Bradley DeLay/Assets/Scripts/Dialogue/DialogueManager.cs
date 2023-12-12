@@ -8,33 +8,50 @@ public class DialogueManager : MonoBehaviour
 {
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI dialogueText;
+    public DialogueTrigger initialTrigger; //Exists to enable the Greet
     private Queue<string> sentences;
-    
+
+    private static DialogueManager _instance;
+
+    private Dialogue _currentDialogue;
+    public static DialogueManager Instance
+    {
+        get
+        {
+            return _instance;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         sentences = new Queue<string>();
+        _instance = this;
+        initialTrigger.TriggerDialogue(); //Run Greet
     }
 
     public void StartDialogue(Dialogue dialogue) 
     {
+        _currentDialogue = dialogue;
+        _currentDialogue.choices.SetActive(false);
+        _currentDialogue.dialogueBox.SetActive(true);
         sentences.Clear();
 
-        nameText.text = dialogue.name;
+        nameText.text = _currentDialogue.name;
 
-        foreach(string sentence in dialogue.sentences) 
+        foreach(string sentence in _currentDialogue.sentences) 
         {
             sentences.Enqueue(sentence);
         }
 
-        DisplayNextSentence(dialogue);
+        DisplayNextSentence();
     }
 
-    public void DisplayNextSentence(Dialogue dialogue) 
+    public void DisplayNextSentence() 
     {
         if(sentences.Count == 0) 
         {
-            EndDialogue(dialogue);
+            EndDialogue();
             return;
         }
 
@@ -42,16 +59,16 @@ public class DialogueManager : MonoBehaviour
         dialogueText.text = sentence;
     }
 
-    void EndDialogue(Dialogue dialogue) 
+    void EndDialogue() 
     {
-        if (dialogue.endsLevel == true)
+        if (_currentDialogue.endsLevel == true)
         {
 
         }
         else 
         {
-            dialogue.choices.SetActive(true);
-            dialogue.dialogueBox.SetActive(false);
+            _currentDialogue.choices.SetActive(true);
+            _currentDialogue.dialogueBox.SetActive(false);
         }
     }
 }
